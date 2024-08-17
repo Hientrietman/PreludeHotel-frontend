@@ -15,10 +15,7 @@ public class SecurityConfiguration {
                         authorize
                                 .anyRequest().permitAll() // Cho phép tất cả các yêu cầu
                 )
-                .csrf(csrf ->
-                        csrf
-                                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // Cấu hình CSRF với cookie
-                );
+                .csrf().disable();
 
         return http.build();
     }
