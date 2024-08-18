@@ -13,22 +13,22 @@ import java.util.Set;
 
 @Entity
 @Table(name = "users")
-@FieldDefaults(level = AccessLevel.PRIVATE)
+
 @Data
 public class ApplicationUser {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    int id;
+    private int id;
     @Column(unique = true, nullable = false)
-    String username;
+    private String username;
     @JsonIgnore
-    String password;
-    String firstName;
-    String lastName;
+    private String password;
+    private String firstName;
+    private String lastName;
     @Column(unique = true)
-    String email;
-    String phone;
-    Date dob;
+    private String email;
+    private String phone;
+    private Date dob;
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_role_junction",
