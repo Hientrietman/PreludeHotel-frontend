@@ -2,48 +2,83 @@ package com.prelude.social_app.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
 import lombok.Data;
-import lombok.experimental.FieldDefaults;
-import org.springframework.data.repository.cdi.Eager;
-import org.springframework.format.annotation.NumberFormat;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.sql.Date;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
-
 @Data
-public class ApplicationUser {
+public class ApplicationUser implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
+
     @Column(unique = true, nullable = false)
     private String username;
+
     @JsonIgnore
     private String password;
+
     private String firstName;
     private String lastName;
-    @Column(unique = true)
 
+    @Column(unique = true)
     private String email;
+
     @Column(nullable = true)
     private boolean enabled;
+
     private String verificationCode;
     private String phone;
     private Date dob;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_role_junction",
-            joinColumns = {@JoinColumn(name = "user_id")}, // Trỏ đến khóa chính của bảng User
-            inverseJoinColumns = {@JoinColumn(name = "role_id")} // Trỏ đến khóa chính của bảng Role
+            joinColumns = {@JoinColumn(name = "user_id")},
+            inverseJoinColumns = {@JoinColumn(name = "role_id")}
     )
-    private Set<Roles> authorities;
+    private Set<Roles> roles;
 
     public ApplicationUser() {
-        this.authorities = new HashSet<>();
+        this.roles = new HashSet<>();
         this.enabled = false;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        Set<GrantedAuthority> authorities = new HashSet<>();
+        for (Roles role : roles) {
+            authorities.add(new SimpleGrantedAuthority(role.getAuthority()));
+        }
+        return authorities;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return this.enabled;
     }
 }
