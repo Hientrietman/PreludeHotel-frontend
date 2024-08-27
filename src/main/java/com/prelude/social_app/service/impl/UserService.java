@@ -1,9 +1,10 @@
-package com.prelude.social_app.service;
+package com.prelude.social_app.service.impl;
 
+import com.prelude.social_app.dto.response.LoginResponse;
 import com.prelude.social_app.dto.response.ResponseApi;
+import com.prelude.social_app.dto.resquest.LoginRequest;
 import com.prelude.social_app.dto.resquest.MailVerificationRequest;
 import com.prelude.social_app.dto.resquest.RegisterReq;
-import com.prelude.social_app.exception.ApiErrorResponse;
 import com.prelude.social_app.exception.customError.AccountRegistrationErrorException;
 import com.prelude.social_app.exception.customError.TakenEmailException;
 import com.prelude.social_app.exception.customError.TakenUserNameException;
@@ -12,18 +13,20 @@ import com.prelude.social_app.model.ApplicationUser;
 import com.prelude.social_app.model.Roles;
 import com.prelude.social_app.repository.RoleRepository;
 import com.prelude.social_app.repository.UserRepository;
+import com.prelude.social_app.service.JwtService;
+import com.prelude.social_app.service.MailService;
+import com.prelude.social_app.service.interfaces.IUserService;
 import com.prelude.social_app.util.StringFormat;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.security.SecureRandom;
-import java.util.UUID;
-
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService implements IUserService {
 
     // Repositories for interacting with the database
     private final UserRepository userRepository;
@@ -31,7 +34,8 @@ public class UserService {
     private final MailService mailService;
     private final StringFormat stringFormat;
     private final PasswordEncoder passwordEncoder;
-
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
     /**
      * Registers a new user in the system.
      *
@@ -195,4 +199,18 @@ public class UserService {
         }
     }
 
+    public ResponseApi<LoginResponse> login(LoginRequest req) {
+        try{
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(req.getEmail(),req.getPassword()));
+            var user = userRepository.findByEmail(req.getEmail()).orElseThrow(() -> new UserIdNotFoundException("User not found with email: " + req.getEmail()));
+            LoginResponse loginResponse = new LoginResponse();
+            loginResponse.setToken(jwtService.generateToken(user));
+            loginResponse.setUser(user);
+            return new ResponseApi<>(HttpStatus.OK,"Login Successfully",loginResponse,true);
+        }catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseApi<>(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while loging in", null, false);
+        }
+
+    }
 }
