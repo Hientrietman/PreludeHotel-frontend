@@ -176,4 +176,19 @@ public class UserService {
             return new ResponseApi<>(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while sending the verification code", null, false);
         }
     }
+    public ResponseApi<ApplicationUser> updatePassword(int userid, String password) {
+        try {
+            ApplicationUser applicationUser = userRepository.findById(userid)
+                    .orElseThrow(() -> new UserIdNotFoundException("User not found with ID: " + userid));
+            applicationUser.setPassword(passwordEncoder.encode(stringFormat.cleanString(password)));
+            userRepository.save(applicationUser);
+            return new ResponseApi<>(HttpStatus.OK, "Password updated successfully", applicationUser, true);
+        } catch (UserIdNotFoundException ex) {
+            return new ResponseApi<>(HttpStatus.NOT_FOUND, ex.getMessage(), null, false);
+        }catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseApi<>(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while sending the verification code", null, false);
+        }
+    }
+
 }
