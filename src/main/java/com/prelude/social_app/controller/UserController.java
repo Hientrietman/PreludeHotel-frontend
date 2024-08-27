@@ -25,6 +25,14 @@ public class UserController {
         ResponseApi<ApplicationUser> response = userService.updatePhoneNumber(userid, cleanedPhone);
         return new ResponseEntity<>(response, response.getStatus());
     }
+    @PutMapping("/{userid}/update/password")
+    public ResponseEntity<ResponseApi<ApplicationUser>> updatePassword(
+            @PathVariable int userid,
+            @RequestBody String password) {
 
+
+        ResponseApi<ApplicationUser> responseApi= userService.updatePassword(userid,password);
+        return new ResponseEntity<>(responseApi, responseApi.getStatus());
+    }
 
 }

@@ -9,6 +9,7 @@ import com.prelude.social_app.exception.customError.TakenEmailException;
 import com.prelude.social_app.exception.customError.TakenUserNameException;
 import com.prelude.social_app.exception.customError.UserIdNotFoundException;
 import com.prelude.social_app.model.ApplicationUser;
+import com.prelude.social_app.model.Roles;
 import com.prelude.social_app.repository.RoleRepository;
 import com.prelude.social_app.repository.UserRepository;
 import com.prelude.social_app.util.StringFormat;
@@ -44,10 +45,13 @@ public class UserService {
         applicationUser.setEmail(user.getEmail());
         applicationUser.setPassword(passwordEncoder.encode(user.getPassword()));
         applicationUser.setDob(user.getBirthdayDate());
-        applicationUser.setUsername(stringFormat.generateUserName());
+        applicationUser.setUsername(StringFormat.generateUserName());
 
         // Assign the "USER" role to the new user
-        applicationUser.getAuthorities().add(roleRepository.findByAuthority("USER").get());
+        Roles userRole = roleRepository.findByAuthority("USER")
+                .orElseThrow(() -> new RuntimeException("Role not found"));
+        applicationUser.getRoles().add(userRole);
+
 
         // Check if email or username is already taken
         if (userRepository.existsByEmail(applicationUser.getEmail())) {
@@ -176,4 +180,19 @@ public class UserService {
             return new ResponseApi<>(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while sending the verification code", null, false);
         }
     }
+    public ResponseApi<ApplicationUser> updatePassword(int userid, String password) {
+        try {
+            ApplicationUser applicationUser = userRepository.findById(userid)
+                    .orElseThrow(() -> new UserIdNotFoundException("User not found with ID: " + userid));
+            applicationUser.setPassword(passwordEncoder.encode(stringFormat.cleanString(password)));
+            userRepository.save(applicationUser);
+            return new ResponseApi<>(HttpStatus.OK, "Password updated successfully", applicationUser, true);
+        } catch (UserIdNotFoundException ex) {
+            return new ResponseApi<>(HttpStatus.NOT_FOUND, ex.getMessage(), null, false);
+        }catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseApi<>(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while sending the verification code", null, false);
+        }
+    }
+
 }
