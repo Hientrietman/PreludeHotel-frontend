@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/auth")
 public class AuthController {
+
+
     private final UserService userService;
 
     @PostMapping("/register")
@@ -19,5 +21,30 @@ public class AuthController {
         ResponseApi<ApplicationUser> response = userService.register(user);
         return new ResponseEntity<>(response, response.getStatus());
     }
+
+    @PostMapping("/{userid}/email/code")
+    public ResponseEntity<ResponseApi<ApplicationUser>> createEmailVerification(@PathVariable int userid  ) {
+        ResponseApi<ApplicationUser> response = userService.createVerificationCode(userid);
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+
+    @PostMapping("/{userid}/email/send")
+    public ResponseEntity<ResponseApi<ApplicationUser>> sendEmailVerification(
+            @PathVariable int userid
+            ){
+
+        ResponseApi<ApplicationUser> response = userService.sendEmail(userid);
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+    @PostMapping("/{userid}/email/verify")
+    public ResponseEntity<ResponseApi<ApplicationUser>> verifyEmail(
+            @PathVariable int userid,
+            @RequestBody String verificationCode
+    ){
+
+        ResponseApi<ApplicationUser> response = userService.verifyEmail(userid, verificationCode);
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+
 
 }
