@@ -9,6 +9,7 @@ import com.prelude.social_app.exception.customError.TakenEmailException;
 import com.prelude.social_app.exception.customError.TakenUserNameException;
 import com.prelude.social_app.exception.customError.UserIdNotFoundException;
 import com.prelude.social_app.model.ApplicationUser;
+import com.prelude.social_app.model.Roles;
 import com.prelude.social_app.repository.RoleRepository;
 import com.prelude.social_app.repository.UserRepository;
 import com.prelude.social_app.util.StringFormat;
@@ -44,10 +45,13 @@ public class UserService {
         applicationUser.setEmail(user.getEmail());
         applicationUser.setPassword(passwordEncoder.encode(user.getPassword()));
         applicationUser.setDob(user.getBirthdayDate());
-        applicationUser.setUsername(stringFormat.generateUserName());
+        applicationUser.setUsername(StringFormat.generateUserName());
 
         // Assign the "USER" role to the new user
-        applicationUser.getAuthorities().add(roleRepository.findByAuthority("USER").get());
+        Roles userRole = roleRepository.findByAuthority("USER")
+                .orElseThrow(() -> new RuntimeException("Role not found"));
+        applicationUser.getRoles().add(userRole);
+
 
         // Check if email or username is already taken
         if (userRepository.existsByEmail(applicationUser.getEmail())) {
