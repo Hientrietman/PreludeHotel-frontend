@@ -3,6 +3,7 @@ package com.prelude.social_app.exception;
 import com.prelude.social_app.dto.response.ResponseApi;
 import com.prelude.social_app.exception.customError.TakenEmailException;
 import com.prelude.social_app.exception.customError.TakenUserNameException;
+import com.prelude.social_app.exception.customError.UserIdNotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -29,7 +30,11 @@ public class GlobalExceptionHandler {
         ResponseApi<String> response = new ResponseApi<>(HttpStatus.BAD_REQUEST, ex.getMessage(), null, false);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
-
+    @ExceptionHandler(UserIdNotFoundException.class)
+    public ResponseEntity<ResponseApi<String>> handleUserIdNotFoundException(UserIdNotFoundException ex) {
+        ResponseApi<String> response = new ResponseApi<>(HttpStatus.BAD_REQUEST, ex.getMessage(), null, false);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ResponseApi<String>> handleGlobalException(Exception ex) {
         ResponseApi<String> response = new ResponseApi<>(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred", null, false);

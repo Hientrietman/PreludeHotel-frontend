@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.repository.cdi.Eager;
+import org.springframework.format.annotation.NumberFormat;
 
 import java.sql.Date;
 import java.util.HashSet;
@@ -26,7 +27,11 @@ public class ApplicationUser {
     private String firstName;
     private String lastName;
     @Column(unique = true)
+
     private String email;
+    @Column(nullable = true)
+    private boolean enabled;
+    private String verificationCode;
     private String phone;
     private Date dob;
     @ManyToMany(fetch = FetchType.EAGER)
@@ -38,6 +43,7 @@ public class ApplicationUser {
     private Set<Roles> authorities;
 
     public ApplicationUser() {
-        authorities = new HashSet<>();
+        this.authorities = new HashSet<>();
+        this.enabled = false;
     }
 }
